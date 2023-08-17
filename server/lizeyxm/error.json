@@ -25,10 +25,10 @@
         "Content-Type": "application/json",
         "User-Agent": "OpenAI/NodeJS/3.3.0",
         "Authorization": "Bearer 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",
-        "Content-Length": 75
+        "Content-Length": 68
       },
       "method": "post",
-      "data": "{\"model\":\"text-embedding-ada-002\",\"input\":\"lizeyxm + \\\":\\\" + 你叫什么\"}",
+      "data": "{\"model\":\"text-embedding-ada-002\",\"input\":\"lizeyxm + \\\":\\\" + nihao\"}",
       "url": "https://api.openai.com/v1/embeddings"
     },
     "code": "ECONNRESET",
