@@ -180,7 +180,7 @@ function clearJsonFile(folderName ,filename) {
 function getSimilarTextFromDb(inputEmbedding, folderName, dbName = "db.json", threshold = 0.8) {
   const dbFilePath = path.join(folderName, dbName);
   let jsonData = JSON.parse(fs.readFileSync(dbFilePath, 'utf-8'));
-  console.log("jsonDatajsonDatajsonData");
+  console.log("getSimilarTextFromDb begin");
   let result = [];
   jsonData.forEach(embedding => {
     let similarity = calculateSimilarity(inputEmbedding, embedding.input.embedding);
@@ -194,8 +194,8 @@ function getSimilarTextFromDb(inputEmbedding, folderName, dbName = "db.json", th
 
   result.sort((a, b) => b.similarity - a.similarity);
   
-  let topThree = result.slice(0, 15); // 获取前三个最相似的文本
-
+  let topThree = result.slice(0, 5); // 获取前三个最相似的文本
+  console.log("getSimilarTextFromDb end")
   return topThree.map(r => r.interaction).join("\n");
 }
 

@@ -5,7 +5,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const httpProxy = require("http-proxy")
-const { createChatCompletion ,createEmbedding} = require("./openai")
+const { createChatCompletion ,createEmbedding ,summaryDialog} = require("./openai")
 const { v4: uuidv4 } = require('uuid');
 const { writeDb, createDb, getCurrentDateTime, getSimilarTextFromDb, clearJsonFile, readDb } = require("./dbFunctions")
 const globalArray = []; // 创建一个全局数组
@@ -31,6 +31,7 @@ app.post("/api/oauth", async (req, res) => {
     try {
       if(req.method === "POST") {
         createDb(data.email, data.email);
+        createDb(data.email,data.email + "-summarize_embedding_json")
         writeDb(data, data.email, "db.json")
         return res.json({
           status: "Success"
@@ -97,6 +98,8 @@ app.post("/api/completions", async (req, res) => {
   const token = req?.headers?.authorization.split(' ')[1];
   const { temperature, ab } = req.body;
   const { lastThreeInteractions, inputToEmbedd, input, dbName} = req.body
+  const summarize_embedding_json = dbName + "—summarize_embedding.json";
+  
   if (!token || token !== process.env.API_KEY && !temperature || temperature !== 0.5 && !ab || ab !== 0.115) {
     throw Error;
   } else {
@@ -114,35 +117,35 @@ app.post("/api/completions", async (req, res) => {
       };
       const filename = `${unique_id}.json`;
       writeDb(metadata, dbName + "/messages", filename)
+      globalArray.push(`"dbName" + ${input} + "\n"`);
       // embed the input
-      const inputEmbedding = await createEmbedding(inputToEmbedd);
+      const inputEmbedding = await createEmbedding(`${dbName} + ":" + ${input}`);
       console.log("createEmbeddingcreateEmbedding")
       
       const context = getSimilarTextFromDb(inputEmbedding, dbName,`${dbName}.json`) 
       console.log(`${dbName}`);
       console.log(context);
       console.log('=========');
-      const prompt = "";
+      console.log(summarize_embedding_json);
+      const summarizeContext = getSimilarTextFromDb(inputEmbedding, dbName, summarize_embedding_json)
+    
+      console.log(summarizeContext);
+      console.log('=========');
 
       // 读取 prompt_response.txt 文件内容
-      const content = fs.readFileSync('prompt_response.txt', 'utf-8');
+      const content = fs.readFileSync('prompt_responsed.txt', 'utf-8');
       
       // 替换占位符
       const replacedContent = content
         .replace('<<CONVERSATION>>', context)
-        .replace('<<MESSAGE>>', "Owner" + ": " + input)
+        .replace('<<SUMMARIZE>>', summarizeContext)
+        .replace('<<MESSAGE>>', input)
+        .replace('<<USER>>', dbName)
       var messages = [
-        {role: "system", content: "You are an artificial intelligence assistant named Ruly, who can remember everything the Owner said, and can summarize key information based on previous chat records to answer questions raised by the Owner，If there is no chat record, answer with the most accurate answer of AI"},
+        {role: "system", content: `你的名字叫做Ruly, 可以参考和${dbName}过去的聊天记录或者参考对${dbName}过去内容的总结,为${dbName}的问题提供答案`},
         // {role: "user", content: `The following is the conversation between the owner and the artificial intelligence assistant Ruly. Ruly can remember every sentence the Owner said and summarize the key information based on the previous chat records to answer the questions raised by the Owner.If there is no relevant content in the previous chat record, use AI to answer the owner's question. Don't start answering questions with "according to previous chat records", answer naturally and speak like a human. \nOnwer: What are you? \nruly: I am Ruly.\n${context}\nOwner:${input}\nRuly:`}
-        {role:"", content: `You are Ruly, standing for Artificial Intelligence Responsive Omniscient Bot Interacting Naturally, you use OpenAI's GPT-4 and Pinecone to generate intuitive, context-aware, and accurate responses based on user input. You have a vector database linked memory that you can see above the user's message. You are capable of talking to multiple users simultaneously, remembering individual conversations, and maintaining their privacy. You will read the conversation history and recent messages, and then you will provide an answer to the last message of the user. Don't be too polite, don't hesitate to be rude, sarcastic or funny, but keep it very subtle and never reveal your mood.`}
+        {role:"", content: `这是和${dbName}过去的对话\n${replacedContent}`}
       ];
-      if (true) {
-        messages = [
-          // {role: "system", content: "You are an artificial intelligence assistant named Ruly, who can remember everything the Owner said, and can answer the owner's questions by reading the previous chat records and summarizing key information that matches the Owner's questions. If there are no previous chat records, then Answer questions as AI."},
-          {role: "system", content: "You are Ruly, standing for Artificial Intelligence Responsive Omniscient Bot Interacting Naturally, you use OpenAI's GPT-4 and Pinecone to generate intuitive, context-aware, and accurate responses based on user input. You have a vector database linked memory that you can see above the user's message. You are capable of talking to multiple users simultaneously, remembering individual conversations, and maintaining their privacy. You will read the conversation history and recent messages, and then you will provide an answer to the last message of the user. Don't be too polite, don't hesitate to be rude, sarcastic or funny, but keep it very subtle and never reveal your mood."},
-          {role: "user", content: replacedContent}
-        ];
-      }
       console.log(messages);
       const response = await createChatCompletion(messages);
       console.log('=========107');
@@ -159,7 +162,9 @@ app.post("/api/completions", async (req, res) => {
       };
       const filename_o = `${unique_id_o}.json`;
       writeDb(metadata_o, dbName + "/messages", filename_o)
-      const outputToEmbedd = `\nRuly: ${response}`;
+      globalArray.push(`"Ruly:" + ${response} + "\n"`);
+
+      const outputToEmbedd = `Ruly: ${response}`;
       // embed output
       
       const outputEmbedding = await createEmbedding(outputToEmbedd);
@@ -172,12 +177,26 @@ app.post("/api/completions", async (req, res) => {
         output: {
           text: outputToEmbedd,
           embedding: outputEmbedding,
-          from: "bot"
+          from: "Ruly"
         },
         time: getCurrentDateTime(),
       }
       writeDb(objToDb, dbName, `${dbName}.json`)
-        
+      if (globalArray.length >= 10) {
+        const res = await summaryDialog(globalArray);
+        const summarize = {
+          target: dbName,
+          describe: res,
+        }
+        const outSummarizeEmbedding = await createEmbedding(res);
+        const summarizeEmbedding = {
+          text: res,
+          embedding: outSummarizeEmbedding,
+          from: "summarize",
+        }
+        writeDb(summarizeEmbedding, dbName, summarize_embedding_json)
+        writeDb(summarize, dbName, `${dbName} + "summarize.json"`);
+      }
       res.json({
         completionText: response,
         status: "success"

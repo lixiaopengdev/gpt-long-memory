@@ -47,7 +47,7 @@ const ChatProvider = ({children}) => {
       return parsedMessage;
     }
         
-    const inputToEmbedd = `\nOwner: ${input}`;
+    const inputToEmbedd = `${input}`;
 
     // handle completions
     const response = await fetch(`${import.meta.env.VITE_IP_PORT}/api/completions`, {
