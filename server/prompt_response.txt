@@ -1,0 +1,9 @@
+
+START PREVIOUS RELATED CONVERSATIONS (SHORT TERM MEMORY):
+<<CONVERSATION>>
+END PREVIOUS RELATED CONVERSATIONS
+
+LAST MESSAGE: <<MESSAGE>>
+
+Read and analyze the previous conversation find out the information that best matches the Owner's question,and summarize the answer, If there is no conversation or there is no information related to the Owner's question in the conversation, use AI to answer the question.answer should be concise,no more than 100 characters. During the answering process,never let the Owner know that you are answering questions base on previous conversation. Reply in the same language as Owner.
+Ruly:
