@@ -13,7 +13,7 @@ const authReducer = async (state = { authData: null }, action) => {
       return { ...state, authData: null, loading: false, errors: null };
 
     case actionType.CLEAR_CACHE:
-      const clearCache = await fetch("http://localhost:3000/api/clearCache", {
+      const clearCache = await fetch("http://localhost:3007/api/clearCache", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

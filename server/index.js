@@ -12,7 +12,7 @@ const globalArray = []; // 创建一个全局数组
 
 // Express API 
 const app = express()
-const port = 3000
+const port = 3007
 const proxy = httpProxy.createProxyServer();
 const targetServer = 'http://127.0.0.1:1087';
 
@@ -31,7 +31,7 @@ app.post("/api/oauth", async (req, res) => {
     try {
       if(req.method === "POST") {
         createDb(data.email, data.email);
-        createDb(data.email,data.email + "-summarize_embedding_json")
+        createDb(data.email,data.email + "_summarize_embedding")
         writeDb(data, data.email, "db.json")
         return res.json({
           status: "Success"
@@ -98,7 +98,7 @@ app.post("/api/completions", async (req, res) => {
   const token = req?.headers?.authorization.split(' ')[1];
   const { temperature, ab } = req.body;
   const { lastThreeInteractions, inputToEmbedd, input, dbName} = req.body
-  const summarize_embedding_json = dbName + "—summarize_embedding.json";
+  const summarize_embedding_json = dbName + "_summarize_embedding.json";
   
   if (!token || token !== process.env.API_KEY && !temperature || temperature !== 0.5 && !ab || ab !== 0.115) {
     throw Error;

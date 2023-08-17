@@ -1,8 +1,8 @@
 [
   {
-    "message": "write EPROTO 80E0FBF201000000:error:0A000410:SSL routines:ssl3_read_bytes:sslv3 alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 40\n",
+    "message": "Client network socket disconnected before secure TLS connection was established",
     "name": "Error",
-    "stack": "Error: write EPROTO 80E0FBF201000000:error:0A000410:SSL routines:ssl3_read_bytes:sslv3 alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 40\n\n    at WriteWrap.onWriteComplete [as oncomplete] (node:internal/stream_base_commons:94:16)",
+    "stack": "Error: Client network socket disconnected before secure TLS connection was established\n    at connResetException (node:internal/errors:720:14)\n    at TLSSocket.onConnectEnd (node:_tls_wrap:1682:19)\n    at TLSSocket.emit (node:events:526:35)\n    at endReadableNT (node:internal/streams/readable:1376:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)",
     "config": {
       "transitional": {
         "silentJSONParsing": true,
@@ -31,7 +31,7 @@
       "data": "{\"model\":\"text-embedding-ada-002\",\"input\":\"lizeyxm + \\\":\\\" + 你叫什么\"}",
       "url": "https://api.openai.com/v1/embeddings"
     },
-    "code": "EPROTO",
+    "code": "ECONNRESET",
     "status": null
   }
 ]

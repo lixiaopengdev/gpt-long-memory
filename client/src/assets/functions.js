@@ -11,6 +11,6 @@ export const createOrFetchUser = async (response, addUser) => {
         username: name,
         image: picture
     }
-    axios.post(`http://localhost:3000/api/oauth`, {user})
+    axios.post(`http://localhost:3007/api/oauth`, {user})
     console.log(user)
 }
